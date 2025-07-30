@@ -3,7 +3,7 @@
 from sentence_transformers import SentenceTransformer
 
 # ✅ 改成更強的多語言嵌入模型
-MODEL_NAME = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
+MODEL_NAME = "all-mpnet-base-v2"
 
 _embedding_model = None
 
@@ -16,3 +16,4 @@ def load_embedding_model():
 
 def embed_texts(model, texts):
     return model.encode(texts, convert_to_tensor=False, show_progress_bar=False)
+

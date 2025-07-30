@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from query import find_and_generate_note, debug_query_note
+from query import find_and_generate_note, debug_query_note, debug_query_with_details
 from io import BytesIO
 
 st.set_page_config(page_title="Threat Note Generator", layout="wide")
@@ -18,7 +18,7 @@ def load_uploaded_file(file):
 if uploaded_file:
     new_data = load_uploaded_file(uploaded_file)
     if new_data is not None:
-        # ✅ 解法1通用版：將所有 object 型欄位轉為字串，避免 Arrow 轉換錯誤
+        # 將物件欄位全部轉成字串，避免 NaN 等影響查詢
         for col in new_data.columns:
             if new_data[col].dtype == "object":
                 new_data[col] = new_data[col].astype(str)
@@ -26,31 +26,44 @@ if uploaded_file:
         st.subheader("🔎 預覽上傳內容")
         st.dataframe(new_data)
 
-        # 建立空欄位存放生成的 note
+        # 新增空 note 欄位，用來存結果
         new_data["note"] = ""
 
         if st.button("🚀 開始比對與生成筆記（含除錯資訊）"):
             st.subheader("📌 生成結果")
-            
+
             for idx, row in new_data.iterrows():
-                with st.expander(f"第 {idx+1} 筆"):
-                    result, debug = debug_query_note(row)
-                
+                with st.expander(f"第 {idx+1} 筆資料"):
+                    # 產生結果與 debug dict
+                    result, debug = debug_query_with_details(row)
+
+                    # 更新 DataFrame note 欄位
                     new_data.at[idx, "note"] = result
 
                     st.markdown("#### ✅ 生成的 note")
                     st.markdown(result)
 
-                    # Bonus：把 " | " 轉換成換行，更容易閱讀
-                    pretty_query_text = debug["query_text"].replace(" | ", "\n")
+                    st.markdown("#### 🧪 查詢與相似度資訊")
+                    if "query_text" in debug:
+                        # 格式化 query_text 讓它每個欄位換行，方便閱讀
+                        st.code(debug["query_text"].replace(" | ", "\n"), language="text")
+                    else:
+                        st.code(str(row), language="text")
 
-                    st.markdown("#### 🧪 相似度與參考資料")
-                    st.code(pretty_query_text, language="text")
-                    st.write(f"相似度: `{debug['similarity']:.4f}`")
+                    st.write(f"總相似度: `{debug.get('similarity', 0.0):.4f}`")
+
+                    if "source_meta" in debug:
+                        meta = debug["source_meta"]
+                        st.write("##### 各欄位相似度（若有嵌入）")
+                        for key in ["ip", "domain", "query", "src_ip", "dest_ip"]:
+                            score_key = f"{key}_score"
+                            if score_key in meta:
+                                st.write(f"- `{key}` 相似度: `{meta[score_key]:.4f}`")
+
                     st.markdown("參考 note：")
-                    st.markdown(debug["example_note"])
+                    st.markdown(debug.get("example_note", "(無參考資料)"))
 
-            # 檔案轉成可下載格式
+            # 下載區塊
             st.subheader("⬇️ 下載含筆記的檔案")
 
             file_type = uploaded_file.name.split(".")[-1].lower()
@@ -70,27 +83,22 @@ if uploaded_file:
                     workbook = writer.book
                     worksheet = writer.sheets["Results"]
 
-                    # 格式：水平、垂直置中
                     center_format = workbook.add_format({
                         "align": "center",
                         "valign": "vcenter"
                     })
-
-                    # 格式：note 欄自動換行、垂直靠上、水平置中
                     wrap_format = workbook.add_format({
                         "text_wrap": True,
                         "valign": "top",
                         "align": "center"
                     })
 
-                    # 設定欄寬與格式
                     for col_idx, col_name in enumerate(new_data.columns):
                         if col_name == "note":
                             worksheet.set_column(col_idx, col_idx, 50, wrap_format)
                         else:
                             worksheet.set_column(col_idx, col_idx, 20, center_format)
 
-                    # 設定列高 (跳過表頭列)
                     for row_num in range(1, len(new_data) + 1):
                         worksheet.set_row(row_num, 80)
 

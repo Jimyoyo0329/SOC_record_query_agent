@@ -29,8 +29,12 @@ def ingest_to_chroma(filepath: str):
     collection = client.get_or_create_collection(name="alerts")
 
     for i, (text, vector) in enumerate(zip(texts, embeddings)):
-        metadata = df.iloc[i].to_dict()
-        metadata.pop("time", None)
+        metadata = {
+            k: str(v).strip() if pd.notna(v) else "nan"
+            for k, v in df.iloc[i].to_dict().items()
+            if k != "time"
+        }
+
         print(f"Index {i} metadata note: {metadata.get('note')}")
         collection.add(
             documents=[text],

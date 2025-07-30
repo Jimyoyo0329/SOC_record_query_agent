@@ -22,7 +22,7 @@ def generate_note_from_example(example_note: str, alert_description: str) -> str
 範例：
 {example_note}
 
-請產出新note：
+請產出新note，並且幫我進行重點整理：
 """
 
     # 呼叫新版 chat.completions.create API
