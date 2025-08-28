@@ -53,3 +53,5 @@ conda env create -f environment.yml --name <my_custom_env>
 2. 切到main.py所在的資料夾目錄
 3. streamlit run main.py
 
+### 注意 ! ! !
+如果要部署在開放網域上，API 記得要改掉，放在環境變數。
