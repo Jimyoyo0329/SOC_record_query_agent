@@ -10,7 +10,7 @@ _embedding_model = None
 def load_embedding_model():
     global _embedding_model
     if _embedding_model is None:
-        print(f"🔍 載入嵌入模型：{MODEL_NAME}")
+        print(f"=== 載入嵌入模型：{MODEL_NAME} ====")
         _embedding_model = SentenceTransformer(MODEL_NAME)
     return _embedding_model
 

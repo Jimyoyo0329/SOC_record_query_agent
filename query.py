@@ -1,154 +1,96 @@
 import pandas as pd
-from chromadb import PersistentClient
-from embedding import load_embedding_model, embed_texts
-from utils import row_to_text
-from llm_utils import generate_note_from_example, generate_event_outline
+from sqlalchemy import create_engine, MetaData, Table, select, and_
+from llm_utils import generate_note_from_example
 
-CHROMA_DIR = "data/chroma_db"
+# SQLite 位置，根據你的實際檔案路徑
+SQLITE_PATH = "sqlite:///SOC.db"
+TABLE_NAME = "SOC_data"  # 你的資料表名稱
 
-def get_chroma_client():
-    print(f"📁 使用的 Chroma 資料夾: {CHROMA_DIR}")
-    return PersistentClient(path=CHROMA_DIR)
+# 建立連線
+engine = create_engine(SQLITE_PATH)
+metadata = MetaData()
+alerts_table = Table(TABLE_NAME, metadata, autoload_with=engine)
 
-def build_metadata_filter(row: pd.Series, fields: list) -> dict:
+def build_sql_filter(row: pd.Series, fields: list):
+    """從 DataFrame Row 建立 SQL 條件"""
     conditions = []
-    for f in fields:
-        val = row.get(f)
-        if val is not None:
-            val_str = str(val).strip()
-            if val_str != "" and val_str.lower() != "nan":
-                conditions.append({f: val_str})
-    if not conditions:
-        return {}
-    if len(conditions) == 1:
-        return conditions[0]
-    return {"$and": conditions}
+    for field in fields:
+        value = row.get(field)
+        if pd.notna(value) and str(value).strip().lower() != "nan":
+            conditions.append(alerts_table.c[field] == str(value).strip())
+    return and_(*conditions) if conditions else None
 
-def query_similar_notes(row: pd.Series, top_k=3):
-    query_text = row_to_text(row)
-    embedding_model = load_embedding_model()
-    query_vector = embed_texts(embedding_model, [query_text])[0].tolist()
-
-    client = get_chroma_client()
-    collection = client.get_collection(name="alerts")
-
+def query_similar_records(row: pd.Series, top_k: int = 3):
+    """從 SQLite 查詢與 row 欄位相符的記錄"""
     filter_fields = ["src_ip", "dest_ip", "dest_port", "domain"]
-    metadata_filter = build_metadata_filter(row, filter_fields)
+    condition = build_sql_filter(row, filter_fields)
 
-    results = collection.query(
-        query_embeddings=[query_vector],
-        n_results=top_k,
-        include=["documents", "metadatas", "distances"],
-        where=metadata_filter if metadata_filter else None
-    )
-    return query_text, results
+    stmt = select(alerts_table)
+    if condition is not None:
+        stmt = stmt.where(condition)
+    stmt = stmt.limit(top_k)
 
-def find_and_generate_note(new_row: pd.Series, top_k=3, threshold=0.5) -> str:
-    query_text, results = query_similar_notes(new_row, top_k)
+    with engine.connect() as conn:
+        result = conn.execute(stmt)
+        return [dict(r._mapping) for r in result]
 
-    for doc, meta, dist in zip(results["documents"][0], results["metadatas"][0], results["distances"][0]):
-        similarity = 1 - dist
-        if similarity >= threshold and "note" in meta and meta["note"]:
-            return generate_note_from_example(meta["note"], query_text)
+def find_and_generate_note_from_sql(row: pd.Series, top_k=3):
+    """查詢相符筆記並生成摘要"""
+    matched_rows = query_similar_records(row, top_k=top_k)
+    query_text = row.to_string()
 
-    return "⚠️ 找不到相似的筆記來生成註解。"
+    for match in matched_rows:
+        note = match.get("note")
+        if note:
+            return generate_note_from_example(note, query_text)
+    return "找不到相似的筆記來生成註解。"
 
+def query_by_field(field_name: str, value: str):
+    """通用欄位查詢：支援 src_ip、domain、dest_ip 等"""
+    if not hasattr(alerts_table.c, field_name):
+        raise ValueError(f"欄位 {field_name} 不存在於 SOC_data 資料表中。")
 
-def debug_query_with_details(row: pd.Series, top_k=5, threshold=0.3):
-    print(f"\n=== [Debug Query] ===")
-    query_text = row_to_text(row)
-    print(f"Query text:\n{query_text}")
+    stmt = select(alerts_table).where(alerts_table.c[field_name] == value)
+    with engine.connect() as conn:
+        result = conn.execute(stmt)
+        return [dict(r._mapping) for r in result]
 
-    embedding_model = load_embedding_model()
-    query_vector = embed_texts(embedding_model, [query_text])[0].tolist()
+# 例用函式：查詢相同 alert.signature 的事件
+def query_by_alert_signature(signature: str):
+    return query_by_field("alert.signature", signature)
 
-    client = get_chroma_client()
-    collection = client.get_collection(name="alerts")
+def query_by_src_ip(src_ip: str):
+    return query_by_field("src_ip", src_ip)
 
-    filter_fields = ["src_ip", "dest_ip", "dest_port", "domain"]
-    metadata_filter = build_metadata_filter(row, filter_fields)
-    print(f"Metadata filter for query:\n{metadata_filter}")
+def query_by_dest_ip(dest_ip: str):
+    return query_by_field("dest_ip", dest_ip)
 
-    results = collection.query(
-        query_embeddings=[query_vector],
-        n_results=top_k,
-        include=["documents", "metadatas", "distances"],
-        where=metadata_filter if metadata_filter else None
-    )
+def query_by_domain(domain: str):
+    return query_by_field("domain", domain)
 
-    doc_list = results.get("documents", [[]])[0]
-    meta_list = results.get("metadatas", [[]])[0]
-    dist_list = results.get("distances", [[]])[0]
+def query_by_dest_port(dest_port: str):
+    return query_by_field("dest_port", dest_port)
 
-    print(f"Total results found: {len(doc_list)}\n")
+def query_by_src_port(src_port: str):
+    return query_by_field("src_port", src_port)
 
-    for i, (doc, meta, dist) in enumerate(zip(doc_list, meta_list, dist_list)):
-        similarity = 1 - dist
-        print(f"Result #{i}:")
-        print(f"  Similarity: {similarity:.4f}")
-        print(f"  Note: {meta.get('note', '')[:100]}")
-        print(f"  Metadata: {meta}")
-        print(f"  Document text preview: {doc[:100]}...\n")
+def query_by_payload(note: str):
+    return query_by_field("payload", note)
 
-    for meta, dist in zip(meta_list, dist_list):
-        similarity = 1 - dist
-        if similarity >= threshold and meta.get("note"):
-            print(f"Found note above threshold ({threshold}), ready for LLM generation.")
-            new_note = generate_note_from_example(meta["note"], query_text)
-            print(f"\n🆕 Generated new note:\n{new_note}")
-            return new_note, {
-                "query_text": query_text,
-                "similarity": similarity,
-                "example_note": meta["note"]
-            }
+def query_by_note(note: str):
+    return query_by_field("note", note)
 
-    print("⚠️ 無法找到足夠相似的筆記來生成註解。")
-    return "⚠️ 無法找到足夠相似的筆記來生成註解。", {
-        "query_text": query_text,
-        "similarity": 0.0,
-        "example_note": "(無匹配資料)"
-    }
-
-# === 新增：根據 alert.signature 查詢所有符合事件，格式化 metadata，並支援 LLM 大綱生成 ===
 
 def format_event_metadata(meta: dict) -> str:
     parts = [
-        f"🔔 alert.signature: {meta.get('alert.signature', '(無)')}",
-        f"📍 Source IP: {meta.get('src_ip', 'N/A')}",
-        f"📍 Destination IP: {meta.get('dest_ip', 'N/A')}",
-        f"🌐 Domain: {meta.get('domain', 'N/A')}",
-        f"📝 Note: {meta.get('note', '無')}",
+        f"alert.signature: {meta.get('alert.signature', '(無)')}",
+        f"Source IP: {meta.get('src_ip', 'N/A')}",
+        f"Destination IP: {meta.get('dest_ip', 'N/A')}",
+        f"Domain: {meta.get('domain', 'N/A')}",
+        f"Destination Port: {meta.get('dest_port', 'N/A')}",
+        f"Source Port: {meta.get('src_port', 'N/A')}",
+        f"Timestamp: {meta.get('time', 'N/A')}",
+        f"Payload: {meta.get('payload', '無')}",
+        f"Note: {meta.get('note', '無')}",
     ]
     return "\n".join(parts)
-
-def query_by_alert_signature(alert_signature: str):
-    client = get_chroma_client()
-    collection = client.get_collection(name="alerts")
-
-    results = collection.get(
-        where={"alert.signature": alert_signature},
-        include=["metadatas"]
-    )
-    return results.get("metadatas", [])
-
-# 查詢相同IP資料
-def query_by_src_ip(src_ip: str):
-    client = get_chroma_client()
-    collection = client.get_collection(name="alerts")
-
-    results = collection.get(
-        where={"src_ip": src_ip},
-        include=["metadatas"]
-    )
-    return results.get("metadatas", [])
-
-# 查詢相同domain資料
-def query_by_domain(domain: str):
-    client = get_chroma_client()
-    collection = client.get_collection(name="alerts")
-
-    results = collection.get(
-        where={"domain": domain},
-        include=["metadatas"]
-    )
-    return results.get("metadatas", [])

@@ -1,0 +1,177 @@
+aiohappyeyeballs==2.6.1
+aiohttp==3.12.13
+aiosignal==1.3.2
+altair==5.5.0
+annotated-types==0.7.0
+anyio==4.9.0
+attrs==25.3.0
+backoff==2.2.1
+bcrypt==4.3.0
+beautifulsoup4==4.13.4
+blinker==1.9.0
+Brotli @ file:///C:/b/abs_c415aux9ra/croot/brotli-split_1736182803933/work
+build==1.2.2.post1
+cachetools==5.5.2
+certifi==2025.6.15
+cffi==1.17.1
+charset-normalizer==3.4.2
+chromadb==1.0.15
+click==8.2.1
+colorama==0.4.6
+coloredlogs==15.0.1
+contourpy @ file:///C:/b/abs_f2u2o_8s9g/croot/contourpy_1732540071787/work
+cryptography==45.0.5
+cycler @ file:///tmp/build/80754af9/cycler_1637851556182/work
+dataclasses-json==0.6.7
+distro==1.9.0
+docx2pdf==0.1.8
+durationpy==0.10
+et_xmlfile==2.0.0
+fastembed==0.7.1
+filelock==3.18.0
+flatbuffers==25.2.10
+fonttools @ file:///C:/b/abs_4crkswws2h/croot/fonttools_1737040078745/work
+frozenlist==1.7.0
+fsspec==2025.5.1
+gitdb==4.0.12
+GitPython==3.1.44
+google-auth==2.40.3
+googleapis-common-protos==1.70.0
+greenlet==3.2.3
+grpcio==1.73.1
+h11==0.16.0
+httpcore==1.0.9
+httptools==0.6.4
+httpx==0.28.1
+httpx-sse==0.4.1
+huggingface-hub==0.33.2
+humanfriendly==10.0
+idna==3.10
+importlib_metadata==8.7.0
+importlib_resources==6.5.2
+Jinja2==3.1.6
+jiter==0.10.0
+joblib==1.5.1
+jsonpatch==1.33
+jsonpointer==3.0.0
+jsonschema==4.24.0
+jsonschema-specifications==2025.4.1
+kiwisolver @ file:///C:/b/abs_faf90xet7a/croot/kiwisolver_1737040915779/work
+kubernetes==33.1.0
+langchain==0.3.26
+langchain-chroma==0.2.5
+langchain-community==0.3.27
+langchain-core==0.3.74
+langchain-ollama==0.3.3
+langchain-text-splitters==0.3.8
+langsmith==0.4.4
+loguru==0.7.3
+lxml==6.0.0
+markdown-it-py==3.0.0
+MarkupSafe==3.0.2
+marshmallow==3.26.1
+matplotlib==3.10.0
+mdurl==0.1.2
+mkl-service==2.4.0
+mkl_fft @ file:///C:/Users/dev-admin/mkl/mkl_fft_1730823082242/work
+mkl_random @ file:///C:/Users/dev-admin/mkl/mkl_random_1730822522280/work
+mmh3==5.1.0
+mpmath==1.3.0
+multidict==6.6.3
+mypy_extensions==1.1.0
+narwhals==1.45.0
+networkx==3.5
+numpy @ file:///C:/b/abs_0123vcxhf8/croot/numpy_and_numpy_base_1725470331966/work/dist/numpy-2.0.1-cp311-cp311-win_amd64.whl#sha256=46eb5850478cda64bda6d2f2d3d6ad8ceeb7cc168b83532e4f9dbbcb42e22ab2
+oauthlib==3.3.1
+ollama==0.5.1
+onnxruntime==1.22.0
+openai==1.97.0
+openpyxl==3.1.5
+opentelemetry-api==1.34.1
+opentelemetry-exporter-otlp-proto-common==1.34.1
+opentelemetry-exporter-otlp-proto-grpc==1.34.1
+opentelemetry-proto==1.34.1
+opentelemetry-sdk==1.34.1
+opentelemetry-semantic-conventions==0.55b1
+orjson==3.10.18
+overrides==7.7.0
+packaging @ file:///C:/b/abs_3by6s2fa66/croot/packaging_1734472138782/work
+pandas==2.3.0
+pdfminer.six==20250506
+pdfplumber==0.11.7
+pillow @ file:///C:/b/abs_68t826txdy/croot/pillow_1744613085333/work
+posthog==5.4.0
+propcache==0.3.2
+protobuf==5.29.5
+py_rust_stemmers==0.1.5
+pyarrow==20.0.0
+pyasn1==0.6.1
+pyasn1_modules==0.4.2
+pybase64==1.4.1
+pycparser==2.22
+pydantic==2.11.7
+pydantic-settings==2.10.1
+pydantic_core==2.33.2
+pydeck==0.9.1
+Pygments==2.19.2
+pyparsing @ file:///C:/b/abs_40z8gyj9wi/croot/pyparsing_1731445739241/work
+pypdf==5.7.0
+pypdfium2==4.30.1
+PyPika==0.48.9
+pyproject_hooks==1.2.0
+PyQt6==6.7.1
+PyQt6_sip @ file:///C:/b/abs_f47pmp6xmn/croot/pyqt-split_1744804513582/work/pyqt_sip
+pyreadline3==3.5.4
+python-dateutil @ file:///C:/b/abs_3au_koqnbs/croot/python-dateutil_1716495777160/work
+python-docx==1.2.0
+python-dotenv==1.1.1
+pytz==2025.2
+pywin32==310
+PyYAML==6.0.2
+referencing==0.36.2
+regex==2024.11.6
+requests==2.32.4
+requests-oauthlib==2.0.0
+requests-toolbelt==1.0.0
+rich==14.0.0
+rpds-py==0.26.0
+rsa==4.9.1
+safetensors==0.5.3
+scikit-learn==1.7.1
+scipy==1.16.0
+sentence-transformers==5.0.0
+shellingham==1.5.4
+sip @ file:///C:/b/abs_5cto136kse/croot/sip_1738856220313/work
+six @ file:///C:/b/abs_149wuyuo1o/croot/six_1744271521515/work
+smmap==5.0.2
+sniffio==1.3.1
+soupsieve==2.7
+SQLAlchemy==2.0.41
+streamlit==1.46.1
+streamlit-chat==0.1.1
+sympy==1.14.0
+tenacity==9.1.2
+threadpoolctl==3.6.0
+tokenizers==0.21.2
+toml==0.10.2
+torch==2.7.1
+tornado @ file:///C:/b/abs_7dzpc171lf/croot/tornado_1748956950306/work
+tqdm==4.67.1
+transformers==4.53.2
+typer==0.16.0
+typing-inspect==0.9.0
+typing-inspection==0.4.1
+typing_extensions==4.14.0
+tzdata==2025.2
+unicodedata2 @ file:///C:/b/abs_dfnftvxi4k/croot/unicodedata2_1736543771112/work
+urllib3==2.5.0
+uvicorn==0.35.0
+watchdog==6.0.0
+watchfiles==1.1.0
+websocket-client==1.8.0
+websockets==15.0.1
+win32_setctime==1.2.0
+xlsxwriter==3.2.5
+yarl==1.20.1
+zipp==3.23.0
+zstandard==0.23.0

@@ -2,6 +2,8 @@ import os
 from openai import OpenAI
 from typing import Optional
 
+
+
 # 從環境變數中取得 API 金鑰（請先設定 OPENAI_API_KEY）
 api_key = "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"
 
@@ -83,3 +85,6 @@ def generate_event_outline(metadata_text: str) -> str:
     )
 
     return response.choices[0].message.content.strip()
+
+
+
