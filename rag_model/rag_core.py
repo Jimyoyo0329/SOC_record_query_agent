@@ -15,7 +15,7 @@ from langchain_core.prompts import PromptTemplate
 CHROMA_PATH = os.path.abspath("data2")
 SQLITE_PATH = "sqlite:///SOC.db"
 ### 如果要公開要記得把key 放到環境變數
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = "KEY"
 TOP_K = 4
 
 # ==== 初始化 ====
